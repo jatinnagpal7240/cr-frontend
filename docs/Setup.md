@@ -29,7 +29,7 @@ cd codeandrun
 ### Frontend (.env.local)
 
 ```
-NEXT_PUBLIC_API_BASE_URL=https://cr-backend-r0vn.onrender.com
+NEXT_PUBLIC_API_BASE_URL=https://cr-backend-2gzz.onrender.com
 ```
 
 ### Backend (.env)
@@ -45,12 +45,14 @@ JWT_SECRET=your_jwt_secret
 ## 4. Install Dependencies
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
 ```
 
 ### Backend
+
 ```bash
 cd backend
 npm install
@@ -61,11 +63,13 @@ npm install
 ## 5. Running Locally
 
 ### Frontend
+
 ```bash
 npm run dev
 ```
 
 ### Backend
+
 ```bash
 node index.js
 ```
@@ -75,15 +79,16 @@ node index.js
 ## 6. Deployment
 
 ### Frontend (Vercel)
+
 - Connect GitHub repo
 - Set `NEXT_PUBLIC_API_BASE_URL` in Vercel dashboard
 
 ### Backend (Render)
+
 - Create Web Service
 - Set `MONGO_URI` and `JWT_SECRET`
 - Deploy from GitHub repo
 
 ---
 
-*Last updated: April 11, 2025*
-
+_Last updated: April 11, 2025_
