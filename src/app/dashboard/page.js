@@ -183,31 +183,59 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
+      {/* HEADER */}
       <div
-        className="w-full bg-black shadow-md flex items-center justify-between"
-        style={{ height: "80px", padding: "0 24px" }}
+        className="w-full bg-[#DCE3E8] shadow-lg flex items-center justify-between px-4 sm:px-8"
+        style={{ height: "70px" }}
       >
-        <div className="flex items-center h-full">
+        {/* Left: Logo + Navigation */}
+        <div className="flex items-center gap-8">
+          {/* Logo */}
           <img
-            src="/Code___Run_-_Logos__1_-removebg-preview (1).png"
+            src="/logo1.png"
             alt="Logo"
-            className="h-18 w-auto object-contain"
+            className="h-12 w-auto object-contain object-center transition-transform duration-300 hover:scale-105 drop-shadow-md"
           />
+
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-6">
+            {[
+              { name: "Beginner Courses", href: "/courses", delay: "100" },
+              {
+                name: "Results & Certificates",
+                href: "/results",
+                delay: "100",
+              },
+              { name: "Careers", href: "/careers", delay: "100" },
+            ].map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`group relative text-gray-700 hover:text-blue-700 font-medium transition-all duration-300 ease-out delay-${item.delay} transform hover:-translate-y-0.5`}
+              >
+                {item.name}
+                <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 w-0 bg-blue-700 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </a>
+            ))}
+          </div>
         </div>
-        <div className="relative mr-4">
+
+        {/* Right: Avatar */}
+        <div className="relative">
           <button
             ref={buttonRef}
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="focus:outline-none"
+            className="focus:outline-none transition-transform hover:scale-105"
           >
             {renderAvatar()}
           </button>
 
+          {/* Dropdown Panel */}
           {dropdownOpen && (
             <div
               ref={dropdownRef}
-              className="absolute right-0 mt-3 w-[420px] backdrop-blur-xl bg-white/80 rounded-2xl shadow-2xl border p-6 z-50 animate-fade-in"
+              className="absolute right-2 top-full mt-2 w-[90vw] max-w-sm sm:right-0 backdrop-blur-xl bg-white/80 rounded-2xl shadow-2xl border p-6 z-50 animate-fade-in-up"
             >
               <button
                 onClick={() => setDropdownOpen(false)}
@@ -215,17 +243,18 @@ const Dashboard = () => {
               >
                 &times;
               </button>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-4">
                 {renderAvatar()}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-xl font-bold text-gray-800 animate-fade-in">
                     {user?.name || "User"}
                   </h3>
                   <p className="text-gray-500 text-sm">{user?.email}</p>
                 </div>
               </div>
 
-              <div className="mt-6">
+              {/* Username Input Section */}
+              <div className="mt-4 animate-fade-in">
                 {usernameSuccess ? (
                   <div className="text-green-600 text-sm space-y-1">
                     <p>
@@ -236,7 +265,7 @@ const Dashboard = () => {
                     </p>
                   </div>
                 ) : !user?.username ? (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <div className="text-sm font-medium text-gray-700 flex items-center gap-1">
                       Choose a unique username
                       <span className="relative">
@@ -258,7 +287,7 @@ const Dashboard = () => {
                         {showTooltip && (
                           <div
                             ref={tooltipBoxRef}
-                            className="absolute z-50 top-6 left-1/2 transform -translate-x-1/2 bg-white text-gray-700 border rounded-lg p-2 shadow-lg text-xs w-64"
+                            className="absolute z-50 top-6 left-1/2 transform -translate-x-1/2 bg-white text-gray-700 border rounded-lg p-2 shadow-lg text-xs w-64 animate-fade-in"
                           >
                             ✅ Username must be at least{" "}
                             <strong>10 characters</strong> long, and can only
@@ -335,17 +364,90 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="mt-16 max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-10 text-center">
-        <h2 className="text-3xl font-extrabold text-gray-800 mb-4">
-          Welcome back, {user?.name || "User"}!
-        </h2>
-        <p className="text-gray-600 text-lg">
-          Your personal CR Dashboard is ready.
-        </p>
-        <div className="mt-6 text-sm text-gray-500">
-          ✨ More features coming soon — stay tuned!
+      {/* HERO SECTION */}
+      <section className="w-full bg-white py-20 px-6 sm:px-12 lg:px-24">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4 leading-tight">
+            Learn. Build. Conquer. 🚀
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            At <span className="font-semibold text-blue-700">Code & Run</span>,
+            we transform beginners into confident coders. Start your journey
+            from zero to pro with us.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/courses"
+              className="bg-blue-700 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:bg-blue-800 transition"
+            >
+              Explore Courses
+            </a>
+            <a
+              href="/results"
+              className="bg-white border border-blue-700 text-blue-700 px-6 py-3 rounded-full font-semibold shadow-md hover:bg-blue-50 transition"
+            >
+              View Results & Certificates
+            </a>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ABOUT SECTION */}
+      <section className="w-full bg-[#F7FAFC] py-16 px-6 sm:px-12 lg:px-24">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Why Code & Run?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+              <h3 className="text-xl font-semibold text-blue-700 mb-2">
+                Beginner Friendly
+              </h3>
+              <p className="text-gray-600">
+                No prior experience? No problem. Our courses are designed for
+                complete beginners.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-blue-700 mb-2">
+                Live Results & Certification
+              </h3>
+              <p className="text-gray-600">
+                Track your progress and download certificates directly from your
+                dashboard.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-blue-700 mb-2">
+                Real Community
+              </h3>
+              <p className="text-gray-600">
+                Learn alongside peers and get mentorship to accelerate your
+                growth.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CALL TO ACTION SECTION */}
+      <section className="w-full bg-blue-700 text-white py-16 px-6 sm:px-12 lg:px-24">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to start your journey?
+          </h2>
+          <p className="text-lg mb-8">
+            Join Code & Run and unlock a new future in tech — one line of code
+            at a time.
+          </p>
+          <a
+            href="/courses"
+            className="bg-white text-blue-700 px-6 py-3 rounded-full font-semibold shadow hover:bg-gray-100 transition"
+          >
+            Get Started Now
+          </a>
+        </div>
+      </section>
     </div>
   );
 };
