@@ -49,4 +49,7 @@ next-env.d.ts
 #backend
 /backend
 
+#admin
+/admin
+
 .vercel
