@@ -92,7 +92,7 @@ export default function ResultsCertificatesPage() {
           </p>
         ) : certificates.length === 0 ? (
           <p className="text-center text-gray-400 text-lg">
-            No certificates yet. They'll appear here when ready.
+            No certificates yet. They&apos;ll appear here when ready.
           </p>
         ) : (
           certificates.map((cert, index) => (
