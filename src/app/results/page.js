@@ -23,7 +23,7 @@ export default function ResultsCertificatesPage() {
 
         const formatted = (data.certificates || []).map((cert) => ({
           ...cert,
-          formattedDate: new Date(cert.date).toLocaleDateString("en-GB", {
+          formattedDate: new Date(cert.uploadedAt).toLocaleDateString("en-GB", {
             month: "long",
             year: "numeric",
           }),
@@ -110,9 +110,10 @@ export default function ResultsCertificatesPage() {
                   </p>
                 </div>
                 <a
-                  href={cert.downloadUrl}
+                  href={cert.certificateUrl}
                   className="px-5 py-2 text-sm rounded-full bg-blue-700 text-white hover:bg-blue-800 transition font-medium"
                   download
+                  target="_blank" // optional: opens in new tab
                 >
                   Download Certificate
                 </a>
