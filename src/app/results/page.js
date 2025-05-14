@@ -1,27 +1,58 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import DashboardNavbar from "@/components/DashboardNavbar";
 
 export default function ResultsCertificatesPage() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState(null);
+  const [usernameSuccess, setUsernameSuccess] = useState(null);
+  const usernameRegex = /^[a-zA-Z0-9_]{10,}$/;
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const tooltipIconRef = useRef(null);
+  const tooltipBoxRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+
   useEffect(() => {
-    const fetchCertificates = async () => {
+    const verifySessionAndFetchCertificates = async () => {
       try {
-        const res = await fetch(
+        const sessionRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/session/verify`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        if (!sessionRes.ok) {
+          router.push("/login");
+          return;
+        }
+
+        const sessionData = await sessionRes.json();
+        setUser(sessionData.user);
+
+        const certRes = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificates/my`,
           {
             method: "GET",
             credentials: "include",
           }
         );
-        if (!res.ok) throw new Error("Failed to fetch certificates");
 
-        const data = await res.json();
-        console.log("CERTIFICATE API RESPONSE:", data); // 🔍 Add this line
+        if (!certRes.ok) throw new Error("Failed to fetch certificates");
 
-        const formatted = (data.certificates || []).map((cert) => ({
+        const certData = await certRes.json();
+        const formatted = (certData.certificates || []).map((cert) => ({
           ...cert,
           formattedDate: new Date(cert.uploadedAt).toLocaleDateString("en-GB", {
             month: "long",
@@ -31,47 +62,143 @@ export default function ResultsCertificatesPage() {
 
         setCertificates(formatted);
       } catch (error) {
-        console.error("Error fetching certificates:", error);
+        console.error("Session or Certificate fetch failed:", error);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCertificates();
-  }, []);
+    verifySessionAndFetchCertificates();
+
+    const handleStorageChange = (event) => {
+      if (event.key === "logoutEvent") {
+        router.push("/login");
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      const isInDropdown =
+        dropdownRef.current?.contains(event.target) ||
+        buttonRef.current?.contains(event.target);
+      const isInTooltip =
+        tooltipIconRef.current?.contains(event.target) ||
+        tooltipBoxRef.current?.contains(event.target);
+
+      if (!isInDropdown && dropdownOpen) {
+        setDropdownOpen(false);
+      }
+
+      if (!isInTooltip && showTooltip) {
+        setShowTooltip(false);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen, showTooltip, router]);
+
+  const checkUsernameAvailability = async () => {
+    const trimmed = username.trim();
+    if (!trimmed) return;
+
+    if (!usernameRegex.test(trimmed)) {
+      setUsernameStatus("invalid");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/username/check?username=${trimmed}`
+      );
+      setUsernameStatus(res.status === 200 ? "available" : "taken");
+    } catch (err) {
+      console.error("Error checking username availability", err);
+      setUsernameStatus(null);
+    }
+  };
+
+  const submitUsername = async () => {
+    const trimmed = username.trim();
+    if (!trimmed) return;
+
+    if (!usernameRegex.test(trimmed)) {
+      setShowTooltip(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/username/set`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: trimmed }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        setUsername("");
+        setUsernameStatus(null);
+        setUsernameSuccess(`Username Set - ${data.user.username}`);
+        setShowTooltip(false);
+      } else {
+        alert("❌ Could not set username.");
+      }
+    } catch (err) {
+      console.error("Error setting username", err);
+      alert("❌ Could not set username.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/session/logout`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (res.ok) {
+        localStorage.setItem("session-updated", Date.now());
+        localStorage.setItem("logoutEvent", Date.now());
+        router.push("/login");
+      }
+    } catch (err) {
+      alert("Something went wrong.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center px-8 py-5 shadow-sm border-b border-gray-200 bg-white">
-        <div className="flex items-center gap-8">
-          <img
-            src="/logo1.png"
-            alt="Logo"
-            className="h-12 w-auto object-contain object-center transition-transform duration-300 hover:scale-105 drop-shadow-md"
-          />
-          <div className="hidden md:flex items-center gap-6">
-            {[
-              { name: "Beginner Courses", href: "/courses", delay: "100" },
-              {
-                name: "Results & Certificates",
-                href: "/results",
-                delay: "100",
-              },
-              { name: "Careers", href: "/careers", delay: "100" },
-            ].map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className={`group relative text-gray-700 hover:text-blue-700 font-medium transition-all duration-300 ease-out delay-${item.delay} transform hover:-translate-y-0.5`}
-              >
-                {item.name}
-                <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 w-0 bg-blue-700 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </nav>
+      {/* Reusable Dashboard Navbar */}
+      <DashboardNavbar
+        user={user}
+        dropdownOpen={dropdownOpen}
+        setDropdownOpen={setDropdownOpen}
+        dropdownRef={dropdownRef}
+        buttonRef={buttonRef}
+        tooltipIconRef={tooltipIconRef}
+        tooltipBoxRef={tooltipBoxRef}
+        username={username}
+        setUsername={setUsername}
+        usernameStatus={usernameStatus}
+        usernameSuccess={usernameSuccess}
+        showTooltip={showTooltip}
+        setShowTooltip={setShowTooltip}
+        checkUsernameAvailability={checkUsernameAvailability}
+        submitUsername={submitUsername}
+        handleLogout={handleLogout}
+      />
 
       {/* Header */}
       <header className="text-center py-20 px-6 bg-gradient-to-br from-gray-50 to-white">
@@ -113,9 +240,10 @@ export default function ResultsCertificatesPage() {
                   href={cert.certificateUrl}
                   className="px-5 py-2 text-sm rounded-full bg-blue-700 text-white hover:bg-blue-800 transition font-medium"
                   download
-                  target="_blank" // optional: opens in new tab
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Download Certificate
+                  View Certificate
                 </a>
               </div>
             </div>

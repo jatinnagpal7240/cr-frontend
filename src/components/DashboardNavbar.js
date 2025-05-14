@@ -4,13 +4,14 @@ import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 
-const Navbar = ({ user, setUser }) => {
+const DashboardNavbar = ({ user, setUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [usernameStatus, setUsernameStatus] = useState(null);
   const [usernameSuccess, setUsernameSuccess] = useState(null);
-  const usernameRegex = /^[a-zA-Z0-9_]{10,}$/;
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const usernameRegex = /^[a-zA-Z0-9_]{10,}$/;
 
   const tooltipIconRef = useRef(null);
   const tooltipBoxRef = useRef(null);
@@ -20,21 +21,23 @@ const Navbar = ({ user, setUser }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isInDropdown =
-        dropdownRef.current?.contains(event.target) ||
-        buttonRef.current?.contains(event.target);
-      const isInTooltip =
-        tooltipIconRef.current?.contains(event.target) ||
-        tooltipBoxRef.current?.contains(event.target);
+    const handleClickOutside = (e) => {
+      if (
+        !dropdownRef.current?.contains(e.target) &&
+        !buttonRef.current?.contains(e.target)
+      )
+        setDropdownOpen(false);
 
-      if (!isInDropdown && dropdownOpen) setDropdownOpen(false);
-      if (!isInTooltip && showTooltip) setShowTooltip(false);
+      if (
+        !tooltipIconRef.current?.contains(e.target) &&
+        !tooltipBoxRef.current?.contains(e.target)
+      )
+        setShowTooltip(false);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownOpen, showTooltip]);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -58,12 +61,10 @@ const Navbar = ({ user, setUser }) => {
   const checkUsernameAvailability = async () => {
     const trimmed = username.trim();
     if (!trimmed) return;
-
     if (!usernameRegex.test(trimmed)) {
       setUsernameStatus("invalid");
       return;
     }
-
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/username/check?username=${trimmed}`
@@ -76,12 +77,10 @@ const Navbar = ({ user, setUser }) => {
 
   const submitUsername = async () => {
     const trimmed = username.trim();
-    if (!trimmed) return;
     if (!usernameRegex.test(trimmed)) {
       setShowTooltip(true);
       return;
     }
-
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/username/set`,
@@ -98,12 +97,11 @@ const Navbar = ({ user, setUser }) => {
         setUsername("");
         setUsernameStatus(null);
         setUsernameSuccess(`Username Set - ${data.user.username}`);
-        setShowTooltip(false);
       } else {
-        alert("❌ Could not set username.");
+        alert("Could not set username.");
       }
     } catch {
-      alert("❌ Could not set username.");
+      alert("Could not set username.");
     }
   };
 
@@ -118,13 +116,13 @@ const Navbar = ({ user, setUser }) => {
       );
     } else if (user?.name) {
       return (
-        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-xl font-bold text-white shadow">
+        <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center text-xl font-bold text-white shadow">
           {user.name.charAt(0).toUpperCase()}
         </div>
       );
     } else {
       return (
-        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 shadow">
+        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-black shadow">
           <User className="w-6 h-6" />
         </div>
       );
@@ -133,14 +131,15 @@ const Navbar = ({ user, setUser }) => {
 
   return (
     <div
-      className="w-full bg-[#DCE3E8] shadow-lg flex items-center justify-between px-4 sm:px-8"
+      className="w-full bg-white text-black shadow-md flex items-center justify-between px-4 sm:px-8 border-b border-gray-200"
       style={{ height: "70px" }}
     >
+      {/* Logo & Nav */}
       <div className="flex items-center gap-8">
         <img
           src="/logo1.png"
           alt="Logo"
-          className="h-12 w-auto object-contain hover:scale-105 drop-shadow-md transition-transform"
+          className="h-12 w-auto object-contain hover:scale-105 transition-transform"
         />
         <div className="hidden md:flex items-center gap-6">
           {[
@@ -151,20 +150,21 @@ const Navbar = ({ user, setUser }) => {
             <a
               key={item.name}
               href={item.href}
-              className="group relative text-gray-700 hover:text-blue-700 font-medium transition-all"
+              className="group relative text-black hover:text-blue-700 font-medium transition-all"
             >
               {item.name}
-              <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 w-0 bg-blue-700 transition-all group-hover:w-full"></span>
+              <span className="absolute left-0 bottom-0 h-0.5 w-0 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
             </a>
           ))}
         </div>
       </div>
 
+      {/* Avatar & Dropdown */}
       <div className="relative">
         <button
           ref={buttonRef}
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="focus:outline-none hover:scale-105 transition-transform"
+          className="flex items-center gap-3 focus:outline-none hover:scale-105 transition"
         >
           {renderAvatar()}
         </button>
@@ -172,37 +172,23 @@ const Navbar = ({ user, setUser }) => {
         {dropdownOpen && (
           <div
             ref={dropdownRef}
-            className="absolute right-2 top-full mt-2 w-[90vw] max-w-sm sm:right-0 backdrop-blur-xl bg-white/80 rounded-2xl shadow-2xl border p-6 z-50 animate-fade-in-up"
+            className="absolute right-2 top-full mt-2 w-[90vw] max-w-sm bg-white text-black border rounded-2xl shadow-2xl p-6 z-50"
           >
-            <button
-              onClick={() => setDropdownOpen(false)}
-              className="absolute top-2 right-4 text-gray-500 hover:text-gray-800 text-2xl"
-            >
-              &times;
-            </button>
             <div className="flex items-center gap-4 mb-4">
               {renderAvatar()}
               <div>
-                <h3 className="text-xl font-bold text-gray-800">
-                  {user?.name || "User"}
-                </h3>
-                <p className="text-gray-500 text-sm">{user?.email}</p>
+                <h3 className="text-xl font-bold">{user?.name || "User"}</h3>
+                <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
             </div>
 
+            {/* Username Section */}
             <div className="mt-4">
               {usernameSuccess ? (
-                <div className="text-green-600 text-sm space-y-1">
-                  <p>
-                    <strong>{usernameSuccess}</strong>
-                  </p>
-                  <p className="text-gray-700">
-                    You can use it to login next time.
-                  </p>
-                </div>
+                <p className="text-green-700 text-sm">{usernameSuccess}</p>
               ) : !user?.username ? (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                <div className="space-y-2 text-sm">
+                  <label className="flex items-center gap-1 font-medium">
                     Choose a unique username
                     <span className="relative">
                       <svg
@@ -223,18 +209,18 @@ const Navbar = ({ user, setUser }) => {
                       {showTooltip && (
                         <div
                           ref={tooltipBoxRef}
-                          className="absolute z-50 top-6 left-1/2 transform -translate-x-1/2 bg-white text-gray-700 border rounded-lg p-2 shadow-lg text-xs w-64 animate-fade-in"
+                          className="absolute z-50 top-6 left-1/2 -translate-x-1/2 bg-white text-black border rounded-lg p-2 shadow-lg text-xs w-64"
                         >
                           ✅ Username must be at least{" "}
-                          <strong>10 characters</strong> and only contain
+                          <strong>10 characters</strong> long and contain only
                           letters, numbers, and underscores.
                         </div>
                       )}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-3">
+                  </label>
+
+                  <div className="flex gap-2">
                     <input
-                      type="text"
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value);
@@ -242,39 +228,28 @@ const Navbar = ({ user, setUser }) => {
                       }}
                       onBlur={checkUsernameAvailability}
                       placeholder="Create your username"
-                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                      className="flex-1 px-3 py-2 border border-gray-300 bg-white rounded-lg text-sm"
                     />
                     <button
                       onClick={submitUsername}
                       disabled={!username}
-                      className={`p-2 rounded-lg transition ${
+                      className={`p-2 rounded-lg ${
                         username
                           ? "bg-blue-600 text-white hover:bg-blue-700"
                           : "bg-gray-300 text-gray-600 cursor-not-allowed"
                       }`}
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
+                      ✓
                     </button>
                   </div>
+
                   {usernameStatus === "available" && (
-                    <p className="text-green-600 text-xs">
+                    <p className="text-green-700 text-xs animate-pulse">
                       Username available!
                     </p>
                   )}
                   {usernameStatus === "taken" && (
-                    <p className="text-red-500 text-xs">
+                    <p className="text-red-600 text-xs">
                       Username already taken.
                     </p>
                   )}
@@ -284,11 +259,11 @@ const Navbar = ({ user, setUser }) => {
 
             <div className="mt-6 flex gap-4">
               <button className="flex-1 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                Manage your CR Account
+                Manage Account
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-3 text-sm font-semibold text-red-600 border border-red-500 rounded-lg hover:bg-red-50 transition"
+                className="flex-1 py-3 text-sm font-semibold text-red-600 border border-red-500 rounded-lg hover:bg-red-100 transition"
               >
                 Sign Out
               </button>
@@ -300,4 +275,4 @@ const Navbar = ({ user, setUser }) => {
   );
 };
 
-export default Navbar;
+export default DashboardNavbar;
