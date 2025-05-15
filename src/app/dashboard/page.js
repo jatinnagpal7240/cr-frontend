@@ -89,6 +89,7 @@ const Dashboard = () => {
       if (res.ok) {
         localStorage.setItem("session-updated", Date.now());
         localStorage.setItem("logoutEvent", Date.now());
+        // localStorage.setItem("logout", Date.now().toString());
         router.push("/login");
       }
     } catch (err) {

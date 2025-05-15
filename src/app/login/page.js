@@ -152,6 +152,7 @@ const LoginForm = () => {
         if (response.ok) {
           localStorage.setItem("session-updated", Date.now());
           localStorage.setItem("loginEvent", Date.now());
+          // localStorage.setItem("login", Date.now().toString());
           // Add slight delay to ensure cookie is set
           setTimeout(() => router.push("/dashboard"), 100);
         } else {
